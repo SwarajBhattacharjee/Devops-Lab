@@ -37,8 +37,20 @@ docker compose up --build
 Apply SQL migrations manually when needed:
 
 ```bash
-DATABASE_URL=postgresql+psycopg2://devops@localhost:5432/devops_lab python scripts/apply_migrations.py
+DATABASE_URL=postgresql+psycopg2://devops:changeme@localhost:5432/devops_lab python scripts/apply_migrations.py
 ```
+
+## Production deployment notes
+
+- Use the production override with the base compose file:
+  - `docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml up -d --build`
+- Required env values are in `deploy/.env.example` (including `POSTGRES_PASSWORD`).
+- In production, app services are not published on host ports 5001-5004; nginx is exposed on port 80 and path-routes to services:
+  - `/users`
+  - `/memberships`
+  - `/payments`
+  - `/notifications`
+- Deploy workflow also runs migrations after services come up and Postgres is healthy.
 
 ## Smoke test
 
