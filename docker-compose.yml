@@ -1,0 +1,26 @@
+version: "3.9"
+
+services:
+  user-service:
+    build: ./user-service
+    ports:
+      - "5001:5001"
+
+  membership-service:
+    build: ./membership-service
+    ports:
+      - "5002:5002"
+    depends_on:
+      - user-service
+
+  payment-service:
+    build: ./payment-service
+    ports:
+      - "5003:5003"
+    depends_on:
+      - membership-service
+
+  notification-service:
+    build: ./notification-service
+    ports:
+      - "5004:5004"
