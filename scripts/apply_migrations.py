@@ -3,7 +3,10 @@ from pathlib import Path
 
 from sqlalchemy import create_engine, text
 
-DATABASE_URL = os.getenv("DATABASE_URL", "postgresql+psycopg2://devops@localhost:5432/devops_lab")
+DATABASE_URL = os.getenv(
+    "DATABASE_URL",
+    "postgresql+psycopg2://devops:changeme@localhost:5432/devops_lab",
+)
 MIGRATIONS_DIR = Path(__file__).resolve().parent.parent / "db" / "migrations"
 
 

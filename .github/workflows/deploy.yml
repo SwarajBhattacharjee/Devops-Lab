@@ -38,6 +38,37 @@ jobs:
             git fetch origin
             git checkout main
             git reset --hard origin/main
-            docker compose pull || true
-            docker compose up -d --build
-            docker compose ps
+            docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml pull || true
+            docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml up -d --build
+
+            POSTGRES_CONTAINER_ID=$(docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml ps -q postgres)
+            if [ -z "${POSTGRES_CONTAINER_ID}" ]; then
+              echo "postgres container not found"
+              exit 1
+            fi
+
+            ATTEMPT=1
+            MAX_ATTEMPTS=60
+            while [ "${ATTEMPT}" -le "${MAX_ATTEMPTS}" ]; do
+              HEALTH_STATUS=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' "${POSTGRES_CONTAINER_ID}")
+              if [ "${HEALTH_STATUS}" = "healthy" ]; then
+                echo "postgres is healthy"
+                break
+              fi
+              if [ "${HEALTH_STATUS}" = "unhealthy" ]; then
+                echo "postgres became unhealthy"
+                docker logs "${POSTGRES_CONTAINER_ID}"
+                exit 1
+              fi
+              sleep 2
+              ATTEMPT=$((ATTEMPT + 1))
+            done
+
+            FINAL_HEALTH_STATUS=$(docker inspect --format='{{if .State.Health}}{{.State.Health.Status}}{{else}}no-healthcheck{{end}}' "${POSTGRES_CONTAINER_ID}")
+            if [ "${FINAL_HEALTH_STATUS}" != "healthy" ]; then
+              echo "postgres did not become healthy in time (status=${FINAL_HEALTH_STATUS})"
+              exit 1
+            fi
+
+            docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml --profile migrations run --rm migration-runner
+            docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml ps
