@@ -1,7 +1,7 @@
 import logging
 import os
-import re
 import uuid
+from email.utils import parseaddr
 from datetime import datetime, timezone
 
 from flask import Flask, g, jsonify, request
@@ -22,7 +22,16 @@ logging.basicConfig(
 logger = logging.getLogger(SERVICE_NAME)
 
 metrics = {"requests_total": 0, "requests_errors": 0}
-EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
+
+
+def is_valid_email(value):
+    if not isinstance(value, str):
+        return False
+    value = value.strip()
+    if len(value) > 254 or "@" not in value:
+        return False
+    parsed = parseaddr(value)[1]
+    return parsed == value and parsed.count("@") == 1
 
 
 def init_db():
@@ -112,7 +121,7 @@ def create_user():
 
     if not name or not email:
         return error_response("name and email are required", 400)
-    if not EMAIL_RE.match(email):
+    if not is_valid_email(email):
         return error_response("email format is invalid", 400)
 
     try:
