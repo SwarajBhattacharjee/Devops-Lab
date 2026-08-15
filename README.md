@@ -1,77 +1,55 @@
 # Devops Lab
 
-A small microservices playground built to practice **DevOps workflows** (Git branching, staging/committing, merging, and pushing to GitHub) using a fictional **gym membership system** as the sample application.
+A microservices playground for a fictional gym membership platform.
 
-The "business" behind this project: a gym where people sign up for memberships, manage their profile, pay membership fees, and get notified about their membership status.
-
-## Why this exists
-
-This repo is for learning/practicing:
-- Git fundamentals: init, add, commit
-- Branching strategies (Git-flow: `main` → `develop` → `feature/*`)
-- Merging branches
-- Pushing a multi-service repo to GitHub
-
-It is **not** a production system — the services are intentionally minimal Flask apps with in-memory data.
-
-## Microservices
+## Services
 
 | Service | Responsibility | Port |
 |---|---|---|
-| `user-service` | Register/login gym members, store profile info | 5001 |
-| `membership-service` | Create/manage membership plans & sign-ups | 5002 |
-| `payment-service` | Handle (mock) membership fee payments | 5003 |
-| `notification-service` | Send (mock) welcome/renewal notifications | 5004 |
+| `user-service` | Register/list gym members | 5001 |
+| `membership-service` | Manage plan signups | 5002 |
+| `payment-service` | Record payments with idempotency | 5003 |
+| `notification-service` | Store/send mock notifications | 5004 |
 
-## Project structure
+## What was improved
 
-```
-devops-lab/
-├── README.md
-├── .gitignore
-├── docker-compose.yml
-├── user-service/
-│   ├── app.py
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   └── README.md
-├── membership-service/
-│   ├── app.py
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   └── README.md
-├── payment-service/
-│   ├── app.py
-│   ├── requirements.txt
-│   ├── Dockerfile
-│   └── README.md
-└── notification-service/
-    ├── app.py
-    ├── requirements.txt
-    ├── Dockerfile
-    └── README.md
-```
+- PostgreSQL-backed persistence (no in-memory data loss)
+- Consistent JSON error responses with request IDs
+- Liveness (`/health`), readiness (`/ready`), and metrics (`/metrics`) endpoints
+- Cross-service validations:
+  - Membership signup requires existing user
+  - Payment requires existing membership
+- Duplicate/idempotency handling:
+  - Duplicate user email and active membership detection
+  - Idempotent payment creation via `X-Idempotency-Key`
+- Hardened Dockerfiles (non-root runtime, env-driven config)
+- CI workflow for compose build + smoke test
+- Deploy workflow for VM target using Docker Compose over SSH
 
-## Running a service locally
+## Run locally with Docker Compose
 
 ```bash
-cd user-service
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python app.py
+docker compose up --build
 ```
 
-## Running everything with Docker Compose
+## Database migrations
+
+Apply SQL migrations manually when needed:
 
 ```bash
-docker-compose up --build
+DATABASE_URL=postgresql+psycopg2://devops@localhost:5432/devops_lab python scripts/apply_migrations.py
 ```
 
-## Branching model used in this repo
+## Smoke test
 
-- `main` — always stable/deployable
-- `develop` — integration branch, features get merged here first
-- `feature/<service-name>` — one branch per microservice while it's being built
+With services running:
 
-See the accompanying step-by-step Git guide for exact commands.
+```bash
+python scripts/smoke_test.py
+```
+
+## CI and deploy
+
+- CI: `.github/workflows/ci.yml`
+- Deploy (VM + Docker Compose): `.github/workflows/deploy.yml`
+- Production override/env template: `deploy/docker-compose.prod.yml`, `deploy/.env.example`

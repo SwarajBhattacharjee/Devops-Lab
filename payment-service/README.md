@@ -1,21 +1,20 @@
 # payment-service
 
-Handles (mock) membership fee payments.
+Handles mock membership fee payments.
 
 ## Endpoints
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/health` | Health check |
-| POST | `/payments` | Record a payment (`membership_id`, `amount`) |
-| GET | `/payments` | List all payments |
-| GET | `/payments/<id>` | Get a single payment |
+| GET | `/health` | Liveness check |
+| GET | `/ready` | Readiness check (database) |
+| GET | `/metrics` | Basic request/error counters |
+| POST | `/payments` | Create payment (`membership_id`, `amount`) |
+| GET | `/payments` | List payments |
+| GET | `/payments/<id>` | Get payment |
 
-## Run locally
+## Notes
 
-```bash
-pip install -r requirements.txt
-python app.py
-```
-
-Runs on `http://localhost:5003`.
+- Data persists in PostgreSQL.
+- Payment validates that the target membership exists.
+- `X-Idempotency-Key` enables idempotent payment creation.

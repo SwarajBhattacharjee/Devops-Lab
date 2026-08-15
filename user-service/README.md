@@ -6,16 +6,14 @@ Handles gym member registration and profile lookups.
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/health` | Health check |
-| POST | `/users` | Register a new member (`name`, `email`) |
-| GET | `/users` | List all members |
-| GET | `/users/<id>` | Get a single member |
+| GET | `/health` | Liveness check |
+| GET | `/ready` | Readiness check (database) |
+| GET | `/metrics` | Basic request/error counters |
+| POST | `/users` | Register a user (`name`, `email`) |
+| GET | `/users` | List users |
+| GET | `/users/<id>` | Get a user |
 
-## Run locally
+## Notes
 
-```bash
-pip install -r requirements.txt
-python app.py
-```
-
-Runs on `http://localhost:5001`.
+- Data persists in PostgreSQL.
+- Duplicate email registration returns the existing user with `duplicate: true`.

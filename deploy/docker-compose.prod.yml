@@ -1,0 +1,35 @@
+services:
+  postgres:
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_HOST_AUTH_METHOD: trust
+
+  user-service:
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      FLASK_DEBUG: "false"
+
+  membership-service:
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
+      FLASK_DEBUG: "false"
+
+  payment-service:
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      MEMBERSHIP_SERVICE_URL: ${MEMBERSHIP_SERVICE_URL}
+      NOTIFICATION_SERVICE_URL: ${NOTIFICATION_SERVICE_URL}
+      FLASK_DEBUG: "false"
+
+  notification-service:
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      USER_SERVICE_URL: ${USER_SERVICE_URL}
+      FLASK_DEBUG: "false"

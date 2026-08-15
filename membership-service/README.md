@@ -6,17 +6,16 @@ Handles gym membership plans and sign-ups.
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/health` | Health check |
-| GET | `/plans` | List available membership plans |
-| POST | `/signup` | Sign a user up (`user_id`, `plan`) |
-| GET | `/memberships` | List all sign-ups |
-| GET | `/memberships/<id>` | Get a single sign-up |
+| GET | `/health` | Liveness check |
+| GET | `/ready` | Readiness check (database) |
+| GET | `/metrics` | Basic request/error counters |
+| GET | `/plans` | List plans |
+| POST | `/signup` | Create membership (`user_id`, `plan`) |
+| GET | `/memberships` | List memberships |
+| GET | `/memberships/<id>` | Get membership |
 
-## Run locally
+## Notes
 
-```bash
-pip install -r requirements.txt
-python app.py
-```
-
-Runs on `http://localhost:5002`.
+- Data persists in PostgreSQL.
+- Signup validates that the target user exists.
+- Duplicate active signup for same user+plan returns existing record with `duplicate: true`.
