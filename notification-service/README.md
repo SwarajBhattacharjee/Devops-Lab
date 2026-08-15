@@ -1,20 +1,18 @@
 # notification-service
 
-Sends (mock) welcome/renewal notifications to gym members.
+Stores and returns mock notifications.
 
 ## Endpoints
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/health` | Health check |
-| POST | `/notify` | Send a notification (`user_id`, `message`) |
-| GET | `/notifications` | List all sent notifications |
+| GET | `/health` | Liveness check |
+| GET | `/ready` | Readiness check (database) |
+| GET | `/metrics` | Basic request/error counters |
+| POST | `/notify` | Send notification (`user_id`, `message`) |
+| GET | `/notifications` | List notifications |
 
-## Run locally
+## Notes
 
-```bash
-pip install -r requirements.txt
-python app.py
-```
-
-Runs on `http://localhost:5004`.
+- Data persists in PostgreSQL.
+- Notification send validates that user exists.
